@@ -2,19 +2,13 @@
 
 import sys
 from xml.sax.handler import ContentHandler
+from xml.sax import make_parser
+
 from xml.sax.saxutils import XMLGenerator
 from xml.sax.xmlreader import AttributesNSImpl
-from xml.sax import make_parser
-from datetime import datetime
-
-from pprint import pprint
-
-bounds = (None, None, None, None)
 
 class OSMHandler(ContentHandler):
     def __init__(self):
-        # ContentHandler.__init__(self)
-        #self._out = out
         # This is a bad state machine
         # This is a generic handler for nodes, ways or relations
         self.clear()
@@ -38,7 +32,6 @@ class OSMHandler(ContentHandler):
 parser = make_parser()
 parser.setContentHandler(OSMHandler())
 fname = sys.argv[1]
-print fname
 fh = open(fname)
 parser.parse(fh)
 
