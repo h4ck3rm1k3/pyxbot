@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<osm version="0.6" generator="Osmosis 0.30.3">
+  <bound box="38.79470,-77.12884,38.99500,-76.90222" origin="http://www.openstreetmap.org/api/0.6"/>
+  <node id="299795401" version="2" timestamp="2009-11-03T07:03:23Z" uid="164928" user="lkoleszar" changeset="3022426" lat="38.8067245" lon="-77.0607572">
+    <tag k="name" v="King Street Metro Station<U+200E>"/>
+    <tag k="railway" v="subway_entrance"/>
+  </node>
+  <node id="299795429" version="2" timestamp="2009-11-03T07:03:23Z" uid="164928" user="lkoleszar" changeset="3022426" lat="38.8073063" lon="-77.0597787">
+    <tag k="name" v="King Street Metro Station<U+200E>"/>
+    <tag k="railway" v="subway_entrance"/>
+  </node>
+</osm>
