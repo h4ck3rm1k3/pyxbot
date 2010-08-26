@@ -3,9 +3,10 @@
 import sys
 from xml.sax.handler import ContentHandler
 from xml.sax import make_parser
+from obj2xml imort node2xml, way2xml, relation2xml
 
 BOTNAME = "pyxbot"
-VERSION = "0.1"
+VERSION = "0.2"
 
 class OSMHandler(ContentHandler):
     """This is a base OSMHandler class which sets up the XML parsing, etc.
@@ -16,52 +17,20 @@ class OSMHandler(ContentHandler):
         self.out = out
         "Initiate the SAX state machine"
         self.clear()
+
     # These methods are quick n dirty. Very dirty.
     def _emit_node(self):
         "Output a node"
-        if self.tags:
-            self.out.write('<node %s >\n' %
-                      ' '.join(['%s="%s"' % (x,y)
-                                for x,y in self.attrs.items()]))
-            for tag in self.tags:
-                self.out.write(u'  <tag k="%s" v="%s" />\n' % (tag, self.tags[tag]))
-            self.out.write('</node>\n')
-        else:
-            self.out.write('<node %s />\n' %
-                      ' '.join(['%s="%s"' % (x,y)
-                                for x,y in self.attrs.items()]))
+        return node2xml(self).to_xml()
+
     def _emit_way(self):
         "Output a way"
-        self.out.write('<way %s >\n' % ' '.join(['%s="%s"' % (x, y)
-                                            for x, y in self.attrs.items()]))
-        if self.tags or self.nodes:
-            for nodeid in self.nodes:
-                self.out.write('  <nd ref="%s" />\n' % nodeid)
-            for tag in self.tags:
-                self.out.write('  <tag k="%s" v="%s" />\n'.decode()
-                          % (tag, self.tags[tag]))
-            self.out.write('</way>\n')
-        else:
-            self.out.write('<way %s />\n' %
-                      ' '.join(['%s="%s"' % (x,y) for x,y in self.attrs]))
+        return way2xml(self).to_xml()
 
     def _emit_relation(self):
         "Output a relation"
-        if self.members or self.tags:
-            self.out.write('<relation %s >\n' %
-                      ' '.join(['%s="%s"' % (x,y) for x,y in self.attrs]))
-            for member in self.members:
-                self.out.write('  <member %s />\n' %
-                          ' '.join(['%s="%s"' % (x,y)
-                                    for x,y in member.items()]))
-            for tag in self.tags:
-                self.out.write('  <tag k="%s" v="%s" />\n'.decode()
-                          % (tag, self.tags[tag]))
-            self.out.write('</relation>\n')
-        else:
-            self.out.write('<relation %s />\n' %
-                      ' '.join(['%s="%s"' % (x,y)
-                                for x,y in self.attrs.items()])) 
+        return relation2xml(self).to_xml()
+
     def emit(self):
         "Output the current element"
         if self.name == 'node':
