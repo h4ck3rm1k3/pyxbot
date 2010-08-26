@@ -21,15 +21,15 @@ class OSMHandler(ContentHandler):
     # These methods are quick n dirty. Very dirty.
     def _emit_node(self):
         "Output a node"
-        return node2xml(self).to_xml()
+        self.out.write(node2xml(self).to_xml() + '\n')
 
     def _emit_way(self):
         "Output a way"
-        return way2xml(self).to_xml()
+        self.out.write(way2xml(self).to_xml() + '\n')
 
     def _emit_relation(self):
         "Output a relation"
-        return relation2xml(self).to_xml()
+        self.out.write(relation2xml(self).to_xml() + '\n')
 
     def emit(self):
         "Output the current element"
