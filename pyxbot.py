@@ -105,9 +105,9 @@ class MyHandler(OSMHandler):
     def selectElement(self):
         return self.attrs.get('id') == "55319624"
 
-parser = make_parser()
-parser.setContentHandler(MyHandler(sys.stdout))
-fname = sys.argv[1]
-out = sys.stdout
-fh = open(fname)
-parser.parse(fh)
+#parser = make_parser()
+#parser.setContentHandler(MyHandler(sys.stdout))
+#fname = sys.argv[1]
+#out = sys.stdout
+#fh = open(fname)
+#parser.parse(fh)
