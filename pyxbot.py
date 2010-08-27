@@ -3,7 +3,8 @@
 import sys
 from xml.sax.handler import ContentHandler
 from xml.sax import make_parser
-from obj2xml imort node2xml, way2xml, relation2xml
+from obj2xml import node2xml, way2xml, relation2xml
+from xml.dom.minidom import Element, Document
 
 BOTNAME = "pyxbot"
 VERSION = "0.2"
@@ -17,28 +18,12 @@ class OSMHandler(ContentHandler):
         self.out = out
         "Initiate the SAX state machine"
         self.clear()
-
-    # These methods are quick n dirty. Very dirty.
-    def _emit_node(self):
-        "Output a node"
-        self.out.write(node2xml(self).to_xml() + '\n')
-
-    def _emit_way(self):
-        "Output a way"
-        self.out.write(way2xml(self).to_xml() + '\n')
-
-    def _emit_relation(self):
-        "Output a relation"
-        self.out.write(relation2xml(self).to_xml() + '\n')
-
-    def emit(self):
-        "Output the current element"
-        if self.name == 'node':
-            self._emit_node()
-        elif self.name == 'way':
-            self._emit_way()
-        elif self.name == 'relation':
-            self._emit_relation()
+        # This will hold our output document
+        self.doc = Document()
+        self.base = self.doc.createElement('osmChange')
+        self.base.setAttribute('version', VERSION)
+        self.base.setAttribute('generator', BOTNAME)
+        self.doc.appendChild(self.base)
 
     def clear(self):
         "Initialize the state machine"
@@ -52,13 +37,13 @@ class OSMHandler(ContentHandler):
         "This function is called at the start of the element (as per SAX)"
         if name == 'node':
             self.name = 'node'
-            self.attrs = attrs.copy()
+            self.attrs = dict(attrs.copy())
         elif name == 'way':
             self.name = 'way'
-            self.attrs = attrs.copy()
+            self.attrs = dict(attrs.copy())
         elif name == 'relation':
             self.name = 'relation'
-            self.attrs = attrs.copy()
+            self.attrs = dict(attrs.copy())
         elif name == 'tag':
             self.tags[attrs.get('k')] = attrs.get('v')
         elif name == 'member':
@@ -75,19 +60,30 @@ class OSMHandler(ContentHandler):
         """Transform the element. Override this function in your
         handler"""
         pass
+
     def modifyElement(self):
         """Modify this element"""
-        self.out.write('<modify version="%s" generator="%s">\n' %
-                       (VERSION, BOTNAME))
-        self.emit()
-        self.out.write("</modify>\n")
+        ele = self.doc.createElement('modify')
+        if self.name == 'node':
+            ele.appendChild(node2xml(self))
+        elif self.name == 'way':
+            ele.appendChild(way2xml(self))
+        elif self.name == 'relation':
+            ele.appendChild(relation2xml(self))
+        self.base.appendChild(ele)
+
     def deleteElement(self):
         """Returns the string to delete the element.  Please use with
         caution!"""
-        self.out.write('<delete version="%s" generator="%s">\n' %
-                       (VERSION, BOTNAME))
-        self.emit()
-        self.out.write('</delete>\n')
+        ele = self.doc.createElement('delete')
+        if self.name == 'node':
+            ele.appendChild(node2xml(self))
+        elif self.name == 'way':
+            ele.appendChild(way2xml(self))
+        elif self.name == 'relation':
+            ele.appendChild(relation2xml(self))
+        self.base.appendChild(ele)
+
     def endElement(self, name):
         """As per the SAX handler, this method is where any work is
         done. You may want to override it, but probably not"""
@@ -96,6 +92,10 @@ class OSMHandler(ContentHandler):
                 self.transformElement()
                 self.modifyElement()
             self.clear()
+
+    def endDocument(self):
+        self.doc.writexml(self.out, addindent='  ', newl = '\n',
+                                encoding = 'utf-8')
 
 class PassThroughHandler(OSMHandler):
     def selectElement(self):
