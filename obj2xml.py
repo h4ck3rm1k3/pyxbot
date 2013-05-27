@@ -2,6 +2,12 @@ from xml.dom.minidom import Element, Document
 
 
 ## We assume all the attributes are already strings
+def tag2xml(k,v):
+    """Takes a tag and returns it as XML"""
+    ele = Element('tag')
+    ele.setAttribute('k', k)
+    ele.setAttribute('v', v)
+    return ele
 
 def node2xml(node):
     """Takes in a node object and returns an XML object for that node"""
@@ -18,10 +24,10 @@ def way2xml(way):
         ele.setAttribute(k,v)
     for ref in way.nodes:
         nd = Element('nd')
-        nd.setAtrribute('ref', ref)
+        nd.setAttribute('ref', ref)
         ele.appendChild(nd)
     for k,v in way.tags.items():
-        ele.appendChild(tags2xml(k,v))
+        ele.appendChild(tag2xml(k,v))
     return ele
 
 def relation2xml(relation):
@@ -33,12 +39,6 @@ def relation2xml(relation):
         for k,v in member.items():
             ele.setAttribute(k,v)
     for k,v in relation.tags.items():
-        ele.appendChild(tags2xml(k,v))
+        ele.appendChild(tag2xml(k,v))
     return ele
 
-def tag2xml(k,v):
-    """Takes a tag and returns it as XML"""
-    ele = Element('tag')
-    ele.setAttribute('k', k)
-    ele.setAttribute('v', v)
-    return ele

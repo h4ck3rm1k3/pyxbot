@@ -7,7 +7,7 @@ from obj2xml import node2xml, way2xml, relation2xml
 from xml.dom.minidom import Element, Document
 
 BOTNAME = "pyxbot"
-VERSION = "0.2"
+VERSION = "0.6"
 
 class OSMHandler(ContentHandler):
     """This is a base OSMHandler class which sets up the XML parsing, etc.
@@ -94,8 +94,8 @@ class OSMHandler(ContentHandler):
             self.clear()
 
     def endDocument(self):
-        self.doc.writexml(self.out, addindent='  ', newl = '\n',
-                                encoding = 'utf-8')
+#        print self.doc.toxml()
+        self.doc.writexml(self.out, addindent='  ', newl = '\n', encoding = 'utf-8')
 
 class PassThroughHandler(OSMHandler):
     def selectElement(self):

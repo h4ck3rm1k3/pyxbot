@@ -4,31 +4,37 @@ import sys
 from xml.sax.handler import ContentHandler
 from xml.sax import make_parser
 from pyxbot import OSMHandler
+import re
 
 BOTNAME = "pyxbot"
 VERSION = "0.1"
 
 class KateBot(OSMHandler):
     def selectElement(self):
-        if ( self.tags.get('source') == 'CCCM' and
-             self.tags.get('attribute_source_type') == 'gisdataset' and
-             self.tags.get('attribute_source_date') == '24-08-2010'):
-            return True
-        else:
-            return False
+        if ( 'addr:street' in self.tags):
+            st = self.tags.get('addr:street')
+            up = st.capitalize
+            if (up != st):
+                print up
+                return True    
+            else:
+                return False
+
     def transformElement(self):
-        self.tags['camp'] = 'spontaneous'
-        self.attrs['version'] = str(int(self.attrs.get('version')) + 1)
-        del(self.attrs['uid'])
-        del(self.attrs['user'])
-        try:
-            del(self.tags['website'])
-        except KeyError:
-            pass
+
+        st = self.tags.get('addr:street')
+        up = st.lower().title()
+        up.replace("Th","th"        )
+        up = re.sub(r'(\d+)Th', r'\1th', up)
+        up = re.sub(r'(\d+)Rd', r'\1rd', up)
+        up = re.sub(r'(\d+)St', r'\1st', up)
+
+        self.tags['addr:street']=up
+#        self.attrs['version'] = str(int(self.attrs.get('version')) + 1)
 
 parser = make_parser()
 fname = sys.argv[1]
-out = open('/home/serge/kate-output.osc','w')
+out = open('kate-output.osc','w')
 fh = open(fname)
 parser.setContentHandler(KateBot(out))
 parser.parse(fh)
