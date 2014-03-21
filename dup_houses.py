@@ -27,38 +27,36 @@ class KateBot(OSMHandler):
                   "building",
                   "addr:city"
               ):
-            if not k  in self.tags:
-           
+            if not k  in self.tags:           
                 return False
 
-
+        if "landuse" in self.tags:
+            return False
 
         if self.tags["building"] != "residential":
             return False
 
-
         if self.tags["addr:city"] !="Lawrence":
-
             return False
-
-#        print str(self.__dict__)
                 
-        if not ((self.name == "way" ) or (self.name == "node" )):
+        if self.name not in  ("way", "node"):
             return False
                 
         vals = []
-        for k in ("addr:housenumber",
-                  "addr:postcode" ,
-                  "addr:street",
-                  "addr:city"):
+        for k in (
+                "building",
+                "addr:housenumber",
+                "addr:postcode" ,
+                "addr:street",
+                "addr:city"):
             if k  in self.tags:
                 vals.append(self.tags[k])
-        n = "|".join(vals)
 
+        n = "|".join(vals)
 
         ele = self.preDeleteElement()
 
-        if (n not in self.seen):        
+        if (n not in self.seen):
             self.seen[n] = [ele]
         else:
             self.seen[n].append(ele)
@@ -73,18 +71,25 @@ class KateBot(OSMHandler):
 
     def endDocument(self):
         for x in self.seen:
-            ways = 0
-            for y in self.seen[x]:
-                if y.firstChild.tagName == "way":
-                    ways = ways + 1
+            l  = len(self.seen[x])
+            #print x,l
 
-            if ways == 0 :
-                continue
+            way = 0
 
-            for y in self.seen[x]:
-                if y.firstChild.tagName == "node":                   
-                    self.base.appendChild(y)
+            if (l > 1):
 
+                for y in self.seen[x]:
+
+                    if y.firstChild.tagName == "way":
+                        #print y.toprettyxml()
+                        way = way +1
+
+                if way > 0:
+                    for y in self.seen[x]:
+                        #print y.toprettyxml()
+                        if y.firstChild.tagName == "node":
+                            self.base.appendChild(y)
+                        
         OSMHandler.endDocument(self)
 
        
