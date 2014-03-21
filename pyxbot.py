@@ -75,6 +75,12 @@ class OSMHandler(ContentHandler):
     def deleteElement(self):
         """Returns the string to delete the element.  Please use with
         caution!"""
+        ele = self.preDeleteElement()
+        self.base.appendChild(ele)
+
+    def preDeleteElement(self):
+        """Returns the string to delete the element.  Please use with
+        caution!"""
         ele = self.doc.createElement('delete')
         if self.name == 'node':
             ele.appendChild(node2xml(self))
@@ -82,7 +88,7 @@ class OSMHandler(ContentHandler):
             ele.appendChild(way2xml(self))
         elif self.name == 'relation':
             ele.appendChild(relation2xml(self))
-        self.base.appendChild(ele)
+        return ele
 
     def endElement(self, name):
         """As per the SAX handler, this method is where any work is
@@ -95,15 +101,16 @@ class OSMHandler(ContentHandler):
 
     def endDocument(self):
 #        print self.doc.toxml()
+        
         self.doc.writexml(self.out, addindent='  ', newl = '\n', encoding = 'utf-8')
 
 class PassThroughHandler(OSMHandler):
     def selectElement(self):
         return True
 
-class MyHandler(OSMHandler):
-    def selectElement(self):
-        return self.attrs.get('id') == "55319624"
+# class MyHandler(OSMHandler):
+#     def selectElement(self):
+#         return self.attrs.get('id') == "55319624"
 
 #parser = make_parser()
 #parser.setContentHandler(MyHandler(sys.stdout))
