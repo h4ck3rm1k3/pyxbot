@@ -1,19 +1,20 @@
 #!/usr/bin/env python
 
-import sys
 from xml.sax.handler import ContentHandler
-from xml.sax import make_parser
-from obj2xml import node2xml, way2xml, relation2xml
-from xml.dom.minidom import Element, Document
+from osmbot.obj2xml import node2xml, way2xml, relation2xml
+from xml.dom.minidom import Document
 
 BOTNAME = "pyxbot"
 VERSION = "0.6"
 
+
 class OSMHandler(ContentHandler):
+
     """This is a base OSMHandler class which sets up the XML parsing, etc.
 
     You will want to override the selectElement and transformElement
     functions"""
+
     def __init__(self, out):
         self.out = out
         "Initiate the SAX state machine"
@@ -101,10 +102,13 @@ class OSMHandler(ContentHandler):
 
     def endDocument(self):
 #        print self.doc.toxml()
-        
-        self.doc.writexml(self.out, addindent='  ', newl = '\n', encoding = 'utf-8')
+
+        self.doc.writexml(self.out, addindent='  ',
+                          newl='\n', encoding='utf-8')
+
 
 class PassThroughHandler(OSMHandler):
+
     def selectElement(self):
         return True
 
@@ -113,8 +117,8 @@ class PassThroughHandler(OSMHandler):
 #         return self.attrs.get('id') == "55319624"
 
 #parser = make_parser()
-#parser.setContentHandler(MyHandler(sys.stdout))
+# parser.setContentHandler(MyHandler(sys.stdout))
 #fname = sys.argv[1]
 #out = sys.stdout
 #fh = open(fname)
-#parser.parse(fh)
+# parser.parse(fh)
