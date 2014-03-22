@@ -7,3 +7,4 @@ scripts/dup_houses.py
 =====================
 The dup_houses bot allows you to draw buildings over house points and it will transfer the tags to them.
 this is good for tracing over buildings where the house numbers are already in place. 
+This uses the pure python quadtree library https://github.com/h4ck3rm1k3/quadpy/ to determine the containment, and a simple bbox around the building. Aborts if more than one building is found. 
