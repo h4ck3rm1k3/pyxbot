@@ -17,10 +17,10 @@ from quadpy.rectangle import Rectangle
 quad = quadpy.Node(-180, -90, 180, 90)
 houses = []
 nodes = {}
+used = {}
 
 
 class Obj:
-
     def __init__(self, other):
         self.attrs = other.attrs
         self.tags = other.tags
@@ -91,7 +91,8 @@ class KateBot(OSMHandler):
 
             # skip over amenities, we want separate nodes for them,
             for k in ("amenity",
-                      "landuse"
+                      "landuse",
+                      "shop"
                       ):
                 if k in self.tags:
                     return False
@@ -133,14 +134,26 @@ class KateBot(OSMHandler):
             xy = [float(v) for v in (x.attrs["lon"], x.attrs["lat"])]
             n = quad.get_children_under_point(xy[0], xy[1])
             if (n):
-                #print ("Found:" +str(x.__dict__))
+
+
                 if len(n) > 1:
                     print str(x.__dict__)
                     raise Exception(n)
                 n = n[0]
                 # print  "|".join(vals)
                 # print xy
-                # print n
+                wayid = n.data.attrs['id']
+                if wayid not in used :
+                    used[wayid]=1
+                else:
+                    vals = []
+                    for k in (
+                            "addr:street",
+                            "addr:housenumber",
+                    ):
+                        vals.append(x.tags[k])
+                    raise Exception("each way can only be used once: " + " ".join(vals) + "\n"+ str(n.data.__dict__))
+
                 for k in x.tags:
                     n.data.tags[k] = x.tags[k]
                 ele = self.doc.createElement('modify')
