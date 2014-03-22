@@ -1,17 +1,20 @@
 #!/usr/bin/env python
 
 import sys
+
 #from xml.sax.handler import ContentHandler
 from xml.sax import make_parser
 from osmbot.pyxbot import OSMHandler
 #import re
+import quadpy
 from osmbot.obj2xml import node2xml, way2xml
 
 BOTNAME = "dup_house_bot"
 VERSION = "0.1"
-import quadpy
+
+#print sys.modules['quadpy']
 from quadpy.rectangle import Rectangle
-quad = quadpy.Node(-180, -180, 180, 180, max_depth=19)
+quad = quadpy.Node(-180, -90, 180, 90)
 houses = []
 nodes = {}
 
@@ -71,10 +74,41 @@ class KateBot(OSMHandler):
 
     def selectElement(self):
 
-        if self.name in ("node"):
+        if self.name == "node":
             xy = [float(x) for x in (self.attrs["lon"], self.attrs["lat"])]
-            # print str(xy)
+
             nodes[self.attrs["id"]] = xy
+
+            for k in ("addr:housenumber",
+                      "addr:postcode",
+                      "addr:street",
+                      "building",
+                      "addr:city"
+                      ):
+                if not k in self.tags:
+                    #print "missing k %s" % k
+                    return False
+
+            # skip over amenities, we want separate nodes for them,
+            for k in ("amenity",
+                      "landuse"
+                      ):
+                if k in self.tags:
+                    return False
+
+
+
+            # if self.tags["building"] != "residential":
+            # print self.tags["building"]
+            #     return False
+
+            if self.tags["addr:city"] != "Lawrence":
+                return False
+
+            house = Obj(self)
+            
+            #print "adding", str(xy), (str(house.__dict__))
+            houses.append(house)
 
         elif self.name in ("way"):
             if "building" in self.tags:
@@ -82,36 +116,7 @@ class KateBot(OSMHandler):
                 rect = MyRect(*bounds)
                 rect.data = Way(self)
                 quad.insert(rect)
-
-        for k in ("addr:housenumber",
-                  "addr:postcode",
-                  "addr:street",
-                  "building",
-                  "addr:city"
-                  ):
-            if not k in self.tags:
-                return False
-
-        if "landuse" in self.tags:
-            return False
-
-        if self.tags["building"] != "residential":
-            return False
-
-        if self.tags["addr:city"] != "Lawrence":
-            return False
-
-        if self.name not in ("node"):
-            return False
-
-        houses.append(Obj(self))
-
-    def transformElement(self):
-        """
-
-        """
-        # print str(self.__dict__)
-        # self.deleteElement()
+                return
 
     def endDocument(self):
 
@@ -128,20 +133,16 @@ class KateBot(OSMHandler):
             xy = [float(v) for v in (x.attrs["lon"], x.attrs["lat"])]
             n = quad.get_children_under_point(xy[0], xy[1])
             if (n):
+                #print ("Found:" +str(x.__dict__))
                 if len(n) > 1:
+                    print str(x.__dict__)
                     raise Exception(n)
                 n = n[0]
                 # print  "|".join(vals)
                 # print xy
                 # print n
-                for k in (
-                        "building",
-                        "addr:housenumber",
-                        "addr:postcode",
-                        "addr:street",
-                        "addr:city"):
-                    if k in x.tags:
-                        n.data.tags[k] = x.tags[k]
+                for k in x.tags:
+                    n.data.tags[k] = x.tags[k]
                 ele = self.doc.createElement('modify')
                 ele.appendChild(way2xml(n.data))
                 self.base.appendChild(ele)
@@ -150,6 +151,9 @@ class KateBot(OSMHandler):
                 ele2 = self.doc.createElement('delete')
                 ele2.appendChild(node2xml(x))
                 self.base.appendChild(ele2)
+            else:
+                #print ("Missing:" +str(x.__dict__))
+                pass
 
         OSMHandler.endDocument(self)
 
@@ -161,10 +165,12 @@ fh = open(fname)
 parser.setContentHandler(KateBot(out))
 parser.parse(fh)
 
-
-def test():
+def report():
     import pprint
     for x in quad.get_children():
         print x, pprint.pformat(x.data.__dict__)
 
-# self.deleteElement()
+    for x in houses:
+        print x, pprint.pformat(x.__dict__)
+
+# report()
