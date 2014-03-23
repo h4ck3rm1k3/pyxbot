@@ -98,15 +98,6 @@ class KateBot(OSMHandler):
                 if k in self.tags:
                     return False
 
-
-
-            # if self.tags["building"] != "residential":
-            # print self.tags["building"]
-            #     return False
-
-            if self.tags["addr:city"] != "Lawrence":
-                return False
-
             house = Obj(self)
             
             #print "adding", str(xy), (str(house.__dict__))
@@ -123,26 +114,19 @@ class KateBot(OSMHandler):
     def endDocument(self):
 
         for x in houses:
-            # vals = []
-            # for k in (
-            #         "building",
-            #         "addr:housenumber",
-            #         "addr:postcode" ,
-            #         "addr:street",
-            #         "addr:city"):
-            #     if k  in x.tags:
-            #         vals.append(x.tags[k])
+
             xy = [float(v) for v in (x.attrs["lon"], x.attrs["lat"])]
             n = quad.get_children_under_point(xy[0], xy[1])
             if (n):
-
-
                 if len(n) > 1:
-                    print str(x.__dict__)
-                    raise Exception(n)
+                    house =  " ".join(x.tags[k] for k in (
+                        "addr:street",
+                        "addr:housenumber",
+                    ))
+                    raise Exception("Overlapping Buildings:" + house + "\n"+ str(n) )
                 n = n[0]
-                # print  "|".join(vals)
-                # print xy
+
+                # extract the way id and make sure we dont assign it twice
                 wayid = n.data.attrs['id']
                 if wayid not in used :
                     used[wayid]=1
@@ -155,8 +139,11 @@ class KateBot(OSMHandler):
                         vals.append(x.tags[k])
                     raise Exception("each way can only be used once: " + " ".join(vals) + "\n"+ str(n.data.__dict__))
 
+                # copy the tags from the node to the way
                 for k in x.tags:
                     n.data.tags[k] = x.tags[k]
+
+                # modify the way
                 ele = self.doc.createElement('modify')
                 ele.appendChild(way2xml(n.data))
                 self.base.appendChild(ele)
