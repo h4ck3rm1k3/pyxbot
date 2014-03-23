@@ -32,6 +32,16 @@ class KateBot(OSMHandler):
                 
         if not ((self.name == "way" ) or (self.name == "node" )):
             return False
+
+
+            for k in ("amenity",
+                      "landuse",
+                      "shop",
+                      "facebook"
+                      "name", # skip over named items
+                      ):
+                if k in self.tags:
+                    return False
                 
         vals = []
         for k in ("addr:housenumber",
