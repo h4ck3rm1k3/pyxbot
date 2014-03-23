@@ -112,6 +112,7 @@ class KateBot(OSMHandler):
                 return
 
     def endDocument(self):
+        errors = 0
 
         for x in houses:
 
@@ -123,7 +124,9 @@ class KateBot(OSMHandler):
                         "addr:street",
                         "addr:housenumber",
                     ))
-                    raise Exception("Overlapping Buildings:" + house + "\n"+ str(n) )
+                    #raise Exception("Overlapping Buildings:" + house + "\n"+ str(n) )
+                    print ("Overlapping Buildings:" + house + "\n"+ str(n) )
+                    errors = errors + 1
                 n = n[0]
 
                 # extract the way id and make sure we dont assign it twice
@@ -137,7 +140,8 @@ class KateBot(OSMHandler):
                             "addr:housenumber",
                     ):
                         vals.append(x.tags[k])
-                    raise Exception("each way can only be used once: " + " ".join(vals) + "\n"+ str(n.data.__dict__))
+                    print ("each way can only be used once: " + " ".join(vals) + "\n"+ str(n.data.__dict__))
+                    errors = errors + 1
 
                 # copy the tags from the node to the way
                 for k in x.tags:
