@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-
 import sys
-
+reload(sys)
+sys.setdefaultencoding('utf-8')
 #from xml.sax.handler import ContentHandler
 from xml.sax import make_parser
 from osmbot.pyxbot import OSMHandler
@@ -92,7 +92,8 @@ class KateBot(OSMHandler):
             # skip over amenities, we want separate nodes for them,
             for k in ("amenity",
                       "landuse",
-                      "shop"
+                      "shop",
+                      "name", # skip over named items
                       ):
                 if k in self.tags:
                     return False
@@ -173,8 +174,10 @@ class KateBot(OSMHandler):
 
 parser = make_parser()
 fname = sys.argv[1]
-out = open('kate-output.osc', 'w')
-fh = open(fname)
+import codecs
+out = codecs.open("merge-dup.osc", "wb", "utf-8")
+fh  = codecs.open(fname, "rb", "utf-8")
+
 parser.setContentHandler(KateBot(out))
 parser.parse(fh)
 
