@@ -26,12 +26,19 @@ class Obj:
         self.tags = other.tags
 
 
+from pointinpolygon.pip import point_in_polygon
+
 class Way (Obj):
 
     def __init__(self, other):
         Obj.__init__(self, other)
         self.nodes = other.nodes
 
+    def get_nodes(self):
+        return [nodes[node] for node in self.nodes]
+
+    def point_in(self, point):
+        point_in_polygon(point, self.get_nodes())
 
 def bbox(nodes):
     bounds = [None, None, None, None]
@@ -70,7 +77,10 @@ class KateBot(OSMHandler):
         OSMHandler.__init__(self, out)
 
     def bbox(self):
-        return bbox([nodes[node] for node in self.nodes])
+        return bbox(self.get_nodes())
+
+    def get_nodes(self):
+        return [nodes[node] for node in self.nodes]
 
     def selectElement(self):
 
@@ -120,13 +130,22 @@ class KateBot(OSMHandler):
             n = quad.get_children_under_point(xy[0], xy[1])
             if (n):
                 if len(n) > 1:
-                    house =  " ".join(x.tags[k] for k in (
-                        "addr:street",
-                        "addr:housenumber",
-                    ))
-                    #raise Exception("Overlapping Buildings:" + house + "\n"+ str(n) )
-                    print ("Overlapping Buildings:" + house + "\n"+ str(n) )
-                    errors = errors + 1
+                    
+                    # now look at the polygon
+                    n2 = []
+                    for b in n :
+                        way = b.data
+                        if b.data.point_in(xy):
+                            n2.append(way)
+                    
+                    if len(n2) > 1:
+                        house =  " ".join(x.tags[k] for k in (
+                            "addr:street",
+                            "addr:housenumber",
+                        ))
+                        #raise Exception("Overlapping Buildings:" + house + "\n"+ str(n) )
+                        print ("Overlapping Buildings:" + house + "\n"+ str(n2) )
+                        errors = errors + 1
                 n = n[0]
 
                 # extract the way id and make sure we dont assign it twice
